@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Father AI</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#020b12;
+    color:#7ef9ff;
+    font-family:Consolas, monospace;
+    overflow-x:hidden;
+}
+
+/* MATRIX */
+canvas{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    z-index:-1;
+}
+
+/* HERO */
+.hero{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    text-align:center;
+}
+
+h1{
+    font-size:6vw;
+    text-shadow:0 0 15px cyan;
+}
+
+#terminal{
+    width:95%;
+    max-width:420px;
+    margin-top:15px;
+    padding:15px;
+    background:black;
+    border-radius:12px;
+    color:#00ff88;
+    min-height:160px;
+    text-align:left;
+    font-size:3.5vw;
+}
+
+.bar-container{
+    width:95%;
+    max-width:420px;
+    height:16px;
+    border:1px solid cyan;
+    margin-top:20px;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+#bar{
+    width:0%;
+    height:100%;
+    background:cyan;
+    transition:0.2s;
+}
+
+#result{
+    margin-top:15px;
+    display:none;
+    font-size:5vw;
+    text-align:center;
+}
+
+/* MENSAJE FINAL */
+#story{
+    display:none;
+    min-height:100vh;
+    padding:20px;
+    text-align:center;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+
+#text{
+    max-width:600px;
+    font-size:4.5vw;
+    line-height:1.8;
+    white-space:pre-wrap;
+    text-shadow:0 0 10px cyan;
+}
+
+/* BOTÓN OCULTO (para activar voz en móvil) */
+#startBtn{
+    margin-top:15px;
+    padding:12px 20px;
+    background:cyan;
+    border:none;
+    border-radius:25px;
+    font-weight:bold;
+    color:#001018;
+    font-size:4vw;
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<audio id="bgMusic" loop preload="auto">
+    <source src="perrobailandopibble.mp3" type="audio/mpeg">
+</audio>
+
+<div class="hero" id="hero">
+
+<h1>FATHER AI v3.5</h1>
+
+<div id="terminal"></div>
+
+<div class="bar-container">
+    <div id="bar"></div>
+</div>
+
+<div id="result"></div>
+
+<button id="startBtn" onclick="enableAudio()">
+▶ Iniciar experiencia
+</button>
+
+</div>
+
+<!-- MENSAJE FINAL -->
+<div id="story">
+
+<h2>MENSAJE DEL SISTEMA</h2>
+
+<div id="text"></div>
+
+</div>
+
+<script>
+
+/* ACTIVAR AUDIO (IMPORTANTE EN CELULAR) */
+let audioEnabled = false;
+
+function enableAudio(){
+    audioEnabled = true;
+    const music = document.getElementById("bgMusic");
+
+    music.volume = 0.25;
+    music.play();
+    document.getElementById("startBtn").style.display = "none";
+    write();
+}
+
+
+
+/* TERMINAL */
+const terminal = document.getElementById("terminal");
+
+const lines = [
+"> Iniciando sistema...",
+"> Analizando recuerdos...",
+"> Buscando al mejor padre...",
+"> Coincidencia encontrada...",
+"> Preparando homenaje..."
+];
+
+let i = 0;
+
+function write(){
+
+    if(i < lines.length){
+
+        const div = document.createElement("div");
+        div.textContent = lines[i];
+        terminal.appendChild(div);
+
+        i++;
+        setTimeout(write, 700);
+
+    }else{
+        loadBar();
+    }
+}
+
+function loadBar(){
+
+    let bar = document.getElementById("bar");
+    let p = 0;
+
+    let interval = setInterval(()=>{
+
+        p++;
+        bar.style.width = p + "%";
+
+        if(p >= 100){
+            clearInterval(interval);
+
+            document.getElementById("result").style.display = "block";
+            document.getElementById("result").innerHTML =
+            "EL MEJOR PAPÁ DEL MUNDO ❤️";
+
+            setTimeout(showStory, 2000);
+        }
+
+    },25);
+}
+
+/* MENSAJE */
+const message =
+`Papá...
+
+Si existiera una forma de compilar el amor,
+no habría memoria suficiente en el universo.
+
+Gracias por cada esfuerzo,
+cada consejo y cada sacrificio.
+
+Todo lo que soy existe gracias a ti.
+
+Feliz Día del Padre ❤️`;
+
+function typeText(text, element, speed = 35){
+
+    let index = 0;
+
+    function writeChar(){
+
+        if(index < text.length){
+            element.innerHTML += text[index];
+            index++;
+            setTimeout(writeChar, speed);
+        }else{
+            speak(text);
+        }
+
+    }
+
+    writeChar();
+}
+
+/* VOZ */
+function speak(text){
+
+    if(!audioEnabled) return;
+
+    const speech = new SpeechSynthesisUtterance(text);
+
+    speech.lang = "es-ES";
+    speech.rate = 0.9;
+
+    window.speechSynthesis.speak(speech);
+}
+
+/* CAMBIO DE ESCENA */
+function showStory(){
+
+    document.getElementById("hero").style.display = "none";
+
+    const story = document.getElementById("story");
+    story.style.display = "flex";
+
+    const text = document.getElementById("text");
+
+    typeText(message, text);
+}
+
+/* MATRIX RESPONSIVE */
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+resize();
+window.addEventListener("resize", resize);
+
+const chars = "01FATHER";
+const fontSize = 14;
+let columns = canvas.width / fontSize;
+let drops = [];
+
+function init(){
+    columns = canvas.width / fontSize;
+    drops = [];
+    for(let i=0;i<columns;i++) drops[i]=1;
+}
+
+init();
+
+function draw(){
+
+    ctx.fillStyle = "rgba(2,11,18,0.08)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle = "#00ff88";
+    ctx.font = fontSize + "px monospace";
+
+    for(let i=0;i<drops.length;i++){
+
+        let text = chars[Math.floor(Math.random()*chars.length)];
+
+        ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+
+        if(drops[i]*fontSize > canvas.height && Math.random() > 0.975){
+            drops[i] = 0;
+        }
+
+        drops[i]++;
+    }
+
+}
+
+setInterval(draw, 33);
+
+</script>
+
+</body>
+</html>
